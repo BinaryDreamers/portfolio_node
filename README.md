@@ -181,3 +181,50 @@ curl -X GET http://localhost:5109/api/questions
   }
 }
 ```
+
+## Get Submissions by Member ID
+
+### Endpoint
+
+`GET /api/submissions/:id`
+
+### Description
+
+Retrieves a list of the last 20 submissions made by a specific member identified by their unique identifier.
+
+### URL Parameters
+
+- `id`: The unique identifier of the member.
+
+### Response
+
+- `200 OK` on success, with the response body containing the list of submissions.
+- `400 Bad Request` if the member is not found or there is an error, with the response body containing the error message.
+
+### Example Request
+
+```bash
+curl -X GET http://localhost:5109/api/submissions/60d0fe4f5311236168a109ca
+```
+
+### Example Response
+
+```json
+{
+  "submissions": [
+    {
+      "title": "Group Anagrams",
+      "timestamp": "1727561061",
+      "statusDisplay": "Wrong Answer",
+      "lang": "cpp"
+    },
+    {
+      "title": "Two Sum",
+      "timestamp": "1727559025",
+      "statusDisplay": "Accepted",
+      "lang": "javascript"
+    }
+  ],
+  "timeToLive": 1727563858487
+}
+```

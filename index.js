@@ -2,7 +2,11 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const Member = require("./memebers");
-const { fetchUserProfile, getQuestions } = require("./leetcode");
+const {
+  fetchUserProfile,
+  getQuestions,
+  getSubmissions,
+} = require("./leetcode");
 const TTLCache = require("./TTLCache");
 const { request } = require("https");
 
@@ -88,8 +92,43 @@ app.get("/api/members/:id", async (request, response) => {
 });
 
 app.get("/api/questions", async (request, response) => {
+  console.log(
+    `\n\n\n\n------------------------------- REQUEST SENT TO  { GET /api/questions} -------------------------------\n\n\n\n`
+  );
   try {
     response.send(await getQuestions());
+  } catch (err) {
+    response.status(400).send(err.message);
+  }
+});
+
+app.get("/api/submissions/:id", async (request, response) => {
+  console.log(
+    `\n\n\n\n------------------------------- REQUEST SENT TO  { GET /api/submissions/:id} -------------------------------\n\n\n\n`
+  );
+  try {
+    const member = cache.get(request.params.id)
+      ? cache.get(request.params.id)
+      : await Member.findOne({ _id: request.params.id });
+
+    if (cache.get(request.params.id)) {
+      console.log(
+        `\n\n\n------------------------------- Read From Cache { GET /api/submissions/:id ${request.params.id}      [+]Account: ${member.leetcode} }-------------------------------\n\n\n`
+      );
+    } else {
+      console.log(
+        `\n\n\n------------------------------- REQUEST SENT TO MONGO_DB { GET /api/submissions/:id - ${request.params.id} }-------------------------------\n\n\n`
+      );
+    }
+
+    if (!member) {
+      response
+        .status(400)
+        .send(`User withh id: ${request.params.id} not found`);
+      return;
+    }
+    response.send(await getSubmissions(member.leetcode));
+    cache.set(member._id.toString(), member, 300);
   } catch (err) {
     response.status(400).send(err.message);
   }

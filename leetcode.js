@@ -1,24 +1,25 @@
 const TTLCache = require("./TTLCache");
 const url = "https://leetcode.com/graphql";
 
-const questions = {};
-const cache = new TTLCache(3);
+const questions_cache = {};
+const user_profile_cache = new TTLCache(120);
+const user_submission_cache = new TTLCache(120);
 
 async function fetchUserProfile(username) {
-  if (await cache.get(username)) {
+  if (await user_profile_cache.get(username)) {
     console.log(
       `------------------------------- Read From Cache 1 { NO REQUEST    [+]Account: ${username} } -------------------------------`
     );
     return {
       username: username,
-      solved: cache.get(username),
-      timeToLive: cache.getTTL(username),
+      solved: user_profile_cache.get(username),
+      timeToLive: user_profile_cache.getTTL(username),
     };
   }
   // GraphQL query
 
   const query =
-    Object.keys(questions).length === 0
+    Object.keys(questions_cache).length === 0
       ? `
         query getUserProfile($username: String!) {
             allQuestionsCount {
@@ -71,11 +72,15 @@ async function fetchUserProfile(username) {
       console.log(
         `-------------------------------Request SENT { POST ${url}    [+]Account: ${username} }-------------------------------`
       );
-    if (await cache.get(username)) {
+    if (await user_profile_cache.get(username)) {
       console.log(
         `------------------------------- Read From Cache 2 { NO REQUEST    [+]Account: ${username} } -------------------------------`
       );
-      return { username: username, solved: cache.get(username) };
+      return {
+        username: username,
+        solved: user_profile_cache.get(username),
+        timeToLive: user_profile_cache.getTTL(username),
+      };
     }
 
     // Check if the response is ok (status code 200)
@@ -107,31 +112,6 @@ async function fetchUserProfile(username) {
       },
     };
 
-    // Map the questions count
-
-    if (Object.keys(questions).length === 0) {
-      console.log(
-        "\n----------------------------- IN QUESTIONS CACHE -----------------------------"
-      );
-
-      data.data.allQuestionsCount.forEach((question) => {
-        switch (question.difficulty) {
-          case "All":
-            questions.all = question.count;
-            break;
-          case "Easy":
-            questions.easy = question.count;
-            break;
-          case "Medium":
-            questions.medium = question.count;
-            break;
-          case "Hard":
-            questions.hard = question.count;
-            break;
-        }
-      });
-    }
-
     // Map the solved submissions
     solvedSubmissions.forEach((solved) => {
       switch (solved.difficulty) {
@@ -151,8 +131,10 @@ async function fetchUserProfile(username) {
     });
 
     console.log("RESSPONSE: ", response.status, "\n\n\n");
-    cache.set(formattedData.username, formattedData.solved, 300);
-    formattedData.timeToLive = cache.getTTL(formattedData.username);
+    user_profile_cache.set(formattedData.username, formattedData.solved, 300);
+    formattedData.timeToLive = user_profile_cache.getTTL(
+      formattedData.username
+    );
     // Return the formatted data
     return formattedData;
   } catch (error) {
@@ -162,7 +144,7 @@ async function fetchUserProfile(username) {
 }
 
 async function getQuestions() {
-  if (Object.keys(questions).length === 0) {
+  if (Object.keys(questions_cache).length === 0) {
     const query = `
         query getUserProfile($username: String!) {
             allQuestionsCount {
@@ -214,16 +196,16 @@ async function getQuestions() {
       data.data.allQuestionsCount.forEach((question) => {
         switch (question.difficulty) {
           case "All":
-            questions.all = question.count;
+            questions_cache.all = question.count;
             break;
           case "Easy":
-            questions.easy = question.count;
+            questions_cache.easy = question.count;
             break;
           case "Medium":
-            questions.medium = question.count;
+            questions_cache.medium = question.count;
             break;
           case "Hard":
-            questions.hard = question.count;
+            questions_cache.hard = question.count;
             break;
         }
       });
@@ -238,8 +220,87 @@ async function getQuestions() {
       "\n----------------------------- READ FROM QUESTIONS CACHE -----------------------------"
     );
   }
-  return questions;
+  return questions_cache;
 }
 
+async function getSubmissions(username) {
+  if (await user_submission_cache.get(username)) {
+    console.log(
+      `------------------------------- Read From Cache 1 { NO REQUEST    [+]Account: ${username} [*] SUBMISSION } -------------------------------`
+    );
+    return {
+      submissions: user_submission_cache.get(username),
+      timeToLive: user_submission_cache.getTTL(username),
+    };
+  }
+  const query = `
+        query getUserProfile($username: String!) {
+        
+            recentSubmissionList(username: $username, limit: 20) {
+                title
+                timestamp
+                statusDisplay
+                lang
+            }
+        }`;
+
+  const variables = {
+    username: username,
+  };
+  try {
+    // Make the request
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: query,
+        variables: variables,
+      }),
+    });
+    if (response)
+      console.log(
+        `-------------------------------Request SENT { POST ${url}    [+]Account: ${username} [*] SUBMISSION }-------------------------------`
+      );
+    if (await user_submission_cache.get(username)) {
+      console.log(
+        `------------------------------- Read From Cache 2 { NO REQUEST    [+]Account: ${username} [*] SUBMISSION } -------------------------------`
+      );
+      return {
+        submissions: user_submission_cache.get(username),
+        timeToLive: user_submission_cache.getTTL(username),
+      };
+    }
+
+    // Check if the response is ok (status code 200)
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    // Parse the JSON response
+    const data = await response.json();
+
+    // Check for GraphQL errors
+    if (data.errors) {
+      throw new Error("GraphQL query errors: " + JSON.stringify(data.errors));
+    }
+
+    // Extract the relevant data
+    const recentSubmissionList = data.data.recentSubmissionList;
+
+    console.log("RESSPONSE: ", response.status, "\n\n\n");
+    user_submission_cache.set(username, recentSubmissionList, 300);
+    // Return the formatted data
+    return {
+      submissions: recentSubmissionList,
+      timeToLive: user_submission_cache.getTTL(username),
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    throw error; // Rethrow the error for further handling if necessary
+  }
+}
 module.exports.fetchUserProfile = fetchUserProfile;
 module.exports.getQuestions = getQuestions;
+module.exports.getSubmissions = getSubmissions;
