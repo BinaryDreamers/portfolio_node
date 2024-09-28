@@ -3,7 +3,10 @@ const app = express();
 const mongoose = require("mongoose");
 const Member = require("./memebers");
 const { fetchUserProfile, getQuestions } = require("./leetcode");
-const cache = {};
+const TTLCache = require("./TTLCache");
+const { request } = require("https");
+
+const cache = new TTLCache();
 
 mongoose
   .connect("mongodb://localhost/binary-dreamers")
@@ -20,13 +23,13 @@ app.use((req, res, next) => {
 app.get("/api/members", async (request, response) => {
   try {
     console.log(
-      `\n\n\n\n------------------------------- REQUEST SENT TO  { GET /api/membersv} -------------------------------\n\n\n\n`
+      `\n\n\n\n------------------------------- REQUEST SENT TO  { GET /api/members} -------------------------------\n\n\n\n`
     );
-    const data = { questions: {}, members: [] };
+    const data = [];
     const members = await Member.find();
     for (const member of members) {
       const leetcodeProfile = await fetchUserProfile(member.leetcode);
-      data.members.push({
+      data.push({
         id: member._id,
         profileUrl: member.profileUrl,
         name: member.name,
@@ -34,12 +37,12 @@ app.get("/api/members", async (request, response) => {
         role: member.role,
         leetcode: member.leetcode,
         solved: leetcodeProfile.solved,
+        timeToLive: leetcodeProfile.timeToLive,
       });
       member.solved = leetcodeProfile;
-      cache[member._id] = member;
+      cache.set(member._id.toString(), member, 300);
     }
-    data.members.sort((a, b) => b.solved.total - a.solved.total);
-    data.questions = getQuestions();
+    data.sort((a, b) => b.solved.total - a.solved.total);
     response.send(data);
   } catch (err) {
     response.status(400).send(err.message);
@@ -48,11 +51,11 @@ app.get("/api/members", async (request, response) => {
 
 app.get("/api/members/:id", async (request, response) => {
   try {
-    const member = cache[request.params.id]
-      ? cache[request.params.id]
+    const member = cache.get(request.params.id)
+      ? cache.get(request.params.id)
       : await Member.findOne({ _id: request.params.id });
 
-    if (cache[request.params.id]) {
+    if (cache.get(request.params.id)) {
       console.log(
         `\n\n\n------------------------------- Read From Cache { GET /api/members/:id ${request.params.id}      [+]Account: ${member.leetcode} }-------------------------------\n\n\n`
       );
@@ -68,9 +71,7 @@ app.get("/api/members/:id", async (request, response) => {
         .send(`User withh id: ${request.params.id} not found`);
       return;
     }
-
-    cache[request.params.id] = member;
-
+    cache.set(member._id.toString(), member, 300);
     response.send({
       telegram: member.telegram,
       linkedin: member.linkedin,
@@ -79,7 +80,16 @@ app.get("/api/members/:id", async (request, response) => {
       bannerUrl: member.bannerUrl,
       email: member.email,
       description: member.description,
+      timeToLive: cache.getTTL(member._id.toString()),
     });
+  } catch (err) {
+    response.status(400).send(err.message);
+  }
+});
+
+app.get("/api/questions", async (request, response) => {
+  try {
+    response.send(await getQuestions());
   } catch (err) {
     response.status(400).send(err.message);
   }
