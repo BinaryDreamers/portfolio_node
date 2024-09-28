@@ -6,10 +6,9 @@ const cache = {
 };
 
 async function fetchUserProfile(username) {
-  console.log(`\n\n\n Account: ${username} \n\n\n\n`);
   if (await cache.members[username]) {
     console.log(
-      "------------------------------- Read From Cache 1 -------------------------------"
+      `------------------------------- Read From Cache 1 { NO REQUEST } -------------------------------`
     );
     return { username: username, solved: cache.members[username] };
   }
@@ -65,18 +64,16 @@ async function fetchUserProfile(username) {
         variables: variables,
       }),
     });
-    if (`Response Code: {response.status}`)
+    if (response)
       console.log(
-        "-------------------------------Request SENT-------------------------------"
+        `-------------------------------Request SENT { POST ${url}    [+]Account: ${username} }-------------------------------`
       );
     if (await cache.members[username]) {
       console.log(
-        "------------------------------- Read From Cache 2 -------------------------------"
+        `------------------------------- Read From Cache 2 { NO REQUEST } -------------------------------`
       );
       return { username: username, solved: cache.members[username] };
     }
-
-    console.log("RESSPONSE: ", response.status);
 
     // Check if the response is ok (status code 200)
     if (!response.ok) {
@@ -111,7 +108,7 @@ async function fetchUserProfile(username) {
 
     if (Object.keys(cache.questions).length === 0) {
       console.log(
-        "----------------------------- IN -----------------------------"
+        "\n----------------------------- IN QUESTIONS CACHE -----------------------------"
       );
 
       data.data.allQuestionsCount.forEach((question) => {
@@ -149,6 +146,8 @@ async function fetchUserProfile(username) {
           break;
       }
     });
+
+    console.log("RESSPONSE: ", response.status, "\n\n\n");
     cache.members[formattedData.username] = formattedData.solved;
     // Return the formatted data
     return formattedData;

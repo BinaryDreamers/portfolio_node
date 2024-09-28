@@ -11,7 +11,6 @@ mongoose
   .catch((err) => console.log(err.message));
 
 app.use((req, res, next) => {
-  console.log("\n\n\n Middleware -ON NNN");
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,");
@@ -20,6 +19,9 @@ app.use((req, res, next) => {
 
 app.get("/api/members", async (request, response) => {
   try {
+    console.log(
+      `\n\n\n\n------------------------------- REQUEST SENT TO  { GET /api/membersv} -------------------------------\n\n\n\n`
+    );
     const data = { questions: {}, members: [] };
     const members = await Member.find();
     for (const member of members) {
@@ -50,6 +52,16 @@ app.get("/api/members/:id", async (request, response) => {
       ? cache[request.params.id]
       : await Member.findOne({ _id: request.params.id });
 
+    if (cache[request.params.id]) {
+      console.log(
+        `\n\n\n------------------------------- Read From Cache { GET /api/members/:id ${request.params.id}      [+]Account: ${member.leetcode} }-------------------------------\n\n\n`
+      );
+    } else {
+      console.log(
+        `\n\n\n------------------------------- REQUEST SENT TO MONGO_DB { GET /api/members/:id - ${request.params.id} }-------------------------------\n\n\n`
+      );
+    }
+
     if (!member) {
       response
         .status(400)
@@ -57,10 +69,8 @@ app.get("/api/members/:id", async (request, response) => {
       return;
     }
 
-    if (!member.solved) {
-      console.log(`\n\n\n Username: ${member.leetcode} \n\n\n\n`);
-      member.solved = (await fetchUserProfile(member.leetcode)).solved;
-    }
+    cache[request.params.id] = member;
+
     response.send({
       telegram: member.telegram,
       linkedin: member.linkedin,
@@ -69,9 +79,6 @@ app.get("/api/members/:id", async (request, response) => {
       bannerUrl: member.bannerUrl,
       email: member.email,
       description: member.description,
-      //   easy: member.solved.easy,
-      //   medium: member.solved.medium,
-      //   hard: member.solved.hard,
     });
   } catch (err) {
     response.status(400).send(err.message);
