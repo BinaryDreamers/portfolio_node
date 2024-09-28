@@ -25,11 +25,11 @@ app.get("/api/members", async (request, response) => {
     console.log(
       `\n\n\n\n------------------------------- REQUEST SENT TO  { GET /api/members} -------------------------------\n\n\n\n`
     );
-    const data = [];
+    const data = { members: [] };
     const members = await Member.find();
     for (const member of members) {
       const leetcodeProfile = await fetchUserProfile(member.leetcode);
-      data.push({
+      data.members.push({
         id: member._id,
         profileUrl: member.profileUrl,
         name: member.name,
@@ -42,7 +42,7 @@ app.get("/api/members", async (request, response) => {
       member.solved = leetcodeProfile;
       cache.set(member._id.toString(), member, 300);
     }
-    data.sort((a, b) => b.solved.total - a.solved.total);
+    data.members.sort((a, b) => b.solved.total - a.solved.total);
     response.send(data);
   } catch (err) {
     response.status(400).send(err.message);
