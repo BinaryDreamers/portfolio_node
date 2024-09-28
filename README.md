@@ -39,7 +39,6 @@ Retrieves a list of all members along with their profiles.
 
 - `200 OK` on success, with the response body containing:
 
-  - `questions`: An object with currently available leetcode questions.
   - `members`: An array of member objects, each containing:
     - `id`: The unique identifier of the member.
     - `profileUrl`: The profile URL of the member.
@@ -65,12 +64,6 @@ curl -X GET http://localhost:5109/api/members
 
 ```json
 {
-  "questions": {
-    "total": 3299,
-    "easy": 826,
-    "medium": 1726,
-    "hard": 747
-  },
   "members": [
     {
       "id": "60d0fe4f5311236168a109ca",
@@ -163,7 +156,7 @@ curl -X GET http://localhost:5109/api/members/60d0fe4f5311236168a109ca
 
 ### Description
 
-Retrieves the list of available questions.
+Retrieves the list of currently available leetcode questions.
 
 ### Response
 
