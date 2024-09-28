@@ -77,7 +77,8 @@ curl -X GET http://localhost:5109/api/members
         "easy": 50,
         "medium": 30,
         "hard": 20
-      }
+      },
+      "timeToLive": 300
     },
     {
       "id": "91d0fe4f4b1122a168a109ac",
