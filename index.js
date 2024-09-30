@@ -142,5 +142,5 @@ app.get("/api/submissions/:id", async (request, response) => {
   }
 });
 
-const port = 5109;
+const port = process.env.PORT || 5109;
 app.listen(port, () => console.log(`Started Listening on PORT: ${port}...`));
