@@ -1,3 +1,6 @@
+const helmet = require("helmet");
+const compression = require("compression");
+const config = require("config");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -8,19 +11,24 @@ const {
   getSubmissions,
 } = require("./leetcode");
 const TTLCache = require("./TTLCache");
-const { request } = require("https");
 
-const cache = new TTLCache();
+const cache = new TTLCache(900);
 
 mongoose
-  .connect("mongodb://localhost/binary-dreamers")
+  .connect(
+    `mongodb+srv://${config.get("db_user")}:${config.get(
+      "db_password"
+    )}@binary-dreamers.oi9ic.mongodb.net/binary-dreamers`
+  )
   .then(console.log("Connected..."))
   .catch((err) => console.log(err.message));
 
+app.use(helmet());
+app.use(compression());
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
 
@@ -44,7 +52,7 @@ app.get("/api/members", async (request, response) => {
         timeToLive: leetcodeProfile.timeToLive,
       });
       member.solved = leetcodeProfile;
-      cache.set(member._id.toString(), member, 300);
+      cache.set(member._id.toString(), member, 1800);
     }
     data.members.sort((a, b) => b.solved.total - a.solved.total);
     response.send(data);
@@ -75,7 +83,7 @@ app.get("/api/members/:id", async (request, response) => {
         .send(`User withh id: ${request.params.id} not found`);
       return;
     }
-    cache.set(member._id.toString(), member, 300);
+    cache.set(member._id.toString(), member, 1800);
     response.send({
       telegram: member.telegram,
       linkedin: member.linkedin,
@@ -128,7 +136,7 @@ app.get("/api/submissions/:id", async (request, response) => {
       return;
     }
     response.send(await getSubmissions(member.leetcode));
-    cache.set(member._id.toString(), member, 300);
+    cache.set(member._id.toString(), member, 1800);
   } catch (err) {
     response.status(400).send(err.message);
   }
