@@ -2,8 +2,8 @@ const TTLCache = require("./TTLCache");
 const url = "https://leetcode.com/graphql";
 
 const questions_cache = {};
-const user_profile_cache = new TTLCache(120);
-const user_submission_cache = new TTLCache(120);
+const user_profile_cache = new TTLCache("Members Cache", 120);
+const user_submission_cache = new TTLCache("Submissions Cache", 10);
 
 async function fetchUserProfile(username) {
   if (await user_profile_cache.get(username)) {
@@ -290,7 +290,7 @@ async function getSubmissions(username) {
     const recentSubmissionList = data.data.recentSubmissionList;
 
     console.log("RESSPONSE: ", response.status, "\n\n\n");
-    user_submission_cache.set(username, recentSubmissionList, 300);
+    user_submission_cache.set(username, recentSubmissionList, 30);
     // Return the formatted data
     return {
       submissions: recentSubmissionList,

@@ -1,6 +1,7 @@
 class TTLCache {
-  constructor(cleanupIntervalInSeconds = 300) {
+  constructor(cacheName, cleanupIntervalInSeconds = 300) {
     this.cache = new Map();
+    this.cacheName = cacheName;
     this.cleanupInterval = setInterval(
       () => this.cleanup(),
       cleanupIntervalInSeconds * 1000
@@ -49,7 +50,7 @@ class TTLCache {
       if (entry.expireAt <= now) {
         this.cache.delete(key);
         console.log(
-          `Cache entry for "${key}" has expired and been removed during cleanup.`
+          `Cache entry for "${key}" has expired from ${this.cacheName} and been removed during cleanup.`
         );
       }
     }

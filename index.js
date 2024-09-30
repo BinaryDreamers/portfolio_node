@@ -12,7 +12,7 @@ const {
 } = require("./leetcode");
 const TTLCache = require("./TTLCache");
 
-const cache = new TTLCache(900);
+const cache = new TTLCache("MongoDB Cache", 900);
 
 mongoose
   .connect(
