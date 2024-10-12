@@ -15,11 +15,7 @@ const TTLCache = require("./TTLCache");
 const cache = new TTLCache("MongoDB Cache", 900);
 
 mongoose
-  .connect(
-    `mongodb+srv://${config.get("db_user")}:${config.get(
-      "db_password"
-    )}@binary-dreamers.oi9ic.mongodb.net/binary-dreamers`
-  )
+  .connect("mongodb://localhost:27017/binary-dreamers")
   .then(console.log("Connected..."))
   .catch((err) => console.log(err.message));
 
