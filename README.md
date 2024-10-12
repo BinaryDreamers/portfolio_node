@@ -25,7 +25,7 @@ To set up the project, ensure you have Node.js installed. Then, follow these ste
 
 ---
 
-## Get All Members
+## 1. Get All Members
 
 ### Endpoint
 
@@ -99,7 +99,7 @@ curl -X GET http://localhost:5109/api/members
 }
 ```
 
-## Get Member by ID
+## 2. Get Member by ID
 
 ### Endpoint
 
@@ -149,7 +149,7 @@ curl -X GET http://localhost:5109/api/members/60d0fe4f5311236168a109ca
 }
 ```
 
-## Get Questions
+## 3. Get Questions
 
 ### Endpoint
 
@@ -183,7 +183,7 @@ curl -X GET http://localhost:5109/api/questions
 }
 ```
 
-## Get Submissions by Member ID
+## 4. Get Submissions by Member ID
 
 ### Endpoint
 
