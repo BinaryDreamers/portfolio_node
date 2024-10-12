@@ -1,3 +1,5 @@
+jest.useFakeTimers();
+
 const {
   fetchUserProfile,
   getQuestions,
@@ -6,6 +8,11 @@ const {
 
 describe("Retrive Data from leetcode", () => {
   const username = "eyosi_y";
+
+  afterEach(() => {
+    jest.clearAllTimers();
+  });
+
   it("should return a vaild user info", async () => {
     const info = await fetchUserProfile(username);
     expect(info).toHaveProperty("username", username);
