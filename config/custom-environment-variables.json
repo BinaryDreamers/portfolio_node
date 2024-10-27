@@ -1,4 +1,5 @@
 {
-    "db_user": "mongo_user",
-    "db_password": "mongo_password"
+    "db_url": "mongo_user",
+    "db_password": "mongo_password",
+    "db_url": "mongo_url"
 }
