@@ -11,8 +11,7 @@ async function fetchUserProfile(username) {
       `------------------------------- Read From Cache 1 { NO REQUEST    [+]Account: ${username} } -------------------------------`
     );
     return {
-      username: username,
-      solved: user_profile_cache.get(username),
+      ...user_profile_cache.get(username),
       timeToLive: user_profile_cache.getTTL(username),
     };
   }
@@ -83,8 +82,7 @@ async function fetchUserProfile(username) {
         `------------------------------- Read From Cache 2 { NO REQUEST    [+]Account: ${username} } -------------------------------`
       );
       return {
-        username: username,
-        solved: user_profile_cache.get(username),
+        ...user_profile_cache.get(username),
         timeToLive: user_profile_cache.getTTL(username),
       };
     }
@@ -138,7 +136,7 @@ async function fetchUserProfile(username) {
     });
 
     console.log("RESSPONSE: ", response.status, "\n\n\n");
-    user_profile_cache.set(formattedData.username, formattedData.solved, 300);
+    user_profile_cache.set(formattedData.username, formattedData, 300);
     formattedData.timeToLive = user_profile_cache.getTTL(
       formattedData.username
     );

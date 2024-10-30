@@ -41,14 +41,14 @@ app.get("/api/members", async (request, response) => {
         id: member._id,
         profileUrl: member.profileUrl,
         name: member.name,
+        ranking: leetcodeProfile.ranking,
         dateAdded: member.dateAdded,
         role: member.role,
         leetcode: member.leetcode,
         solved: leetcodeProfile.solved,
         timeToLive: leetcodeProfile.timeToLive,
-        ranking: leetcodeProfile.ranking,
       });
-      member.solved = leetcodeProfile;
+
       cache.set(member._id.toString(), member, 1800);
     }
     data.members.sort((a, b) => a.ranking - b.ranking);
