@@ -43,6 +43,7 @@ Retrieves a list of all members along with their profiles.
     - `id`: The unique identifier of the member.
     - `profileUrl`: The profile URL of the member.
     - `name`: The name of the member.
+    - `ranking`: The LeetCode ranking of the member.,
     - `dateAdded`: The date the member was added.
     - `role`: The role of the member.
     - `leetcode`: The LeetCode username of the member.
@@ -69,6 +70,7 @@ curl -X GET http://localhost:5109/api/members
       "id": "60d0fe4f5311236168a109ca",
       "profileUrl": "https://example.com/profile/1",
       "name": "John Doe",
+      "ranking": 36789,
       "dateAdded": "2023-01-01T00:00:00.000Z",
       "role": "Developer",
       "leetcode": "john_doe",
@@ -84,6 +86,7 @@ curl -X GET http://localhost:5109/api/members
       "id": "91d0fe4f4b1122a168a109ac",
       "profileUrl": "https://example.com/profile/2",
       "name": "Jhon Smith",
+      "ranking": 534061,
       "dateAdded": "2024-01-01T00:00:00.000Z",
       "role": "Designer",
       "leetcode": "jhon_smith",
