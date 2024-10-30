@@ -28,6 +28,9 @@ async function fetchUserProfile(username) {
             }
             matchedUser(username: $username) {
                 username
+                profile {
+                  ranking
+                }
                 submitStats {
                     acSubmissionNum {
                         difficulty
@@ -41,6 +44,9 @@ async function fetchUserProfile(username) {
         query getUserProfile($username: String!) {
           matchedUser(username: $username) {
             username
+            profile {
+              ranking
+            }
             submitStats {
               acSubmissionNum {
                 difficulty
@@ -103,6 +109,7 @@ async function fetchUserProfile(username) {
     // Initialize the formatted data
     const formattedData = {
       username: userData.username,
+      ranking: userData.profile.ranking,
 
       solved: {
         easy: 0,

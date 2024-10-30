@@ -46,11 +46,12 @@ app.get("/api/members", async (request, response) => {
         leetcode: member.leetcode,
         solved: leetcodeProfile.solved,
         timeToLive: leetcodeProfile.timeToLive,
+        ranking: leetcodeProfile.ranking,
       });
       member.solved = leetcodeProfile;
       cache.set(member._id.toString(), member, 1800);
     }
-    data.members.sort((a, b) => b.solved.total - a.solved.total);
+    data.members.sort((a, b) => a.ranking - b.ranking);
     response.send(data);
   } catch (err) {
     response.status(400).send(err.message);
